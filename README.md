@@ -1,4 +1,40 @@
 perl-edn
 ========
 
-Simple EDN reader for Perl
+Simple [EDN](https://github.com/edn-format/edn) reader for Perl.  Will
+probably also write EDN soon...
+
+It uses [edn-cpp](https://github.com/shaunxcode/edn-cpp) under the
+hood to do the parsing.
+
+This isn't intended as a definitive EDN library, capable of perfectly
+round-tripping any EDN.  Rather, it's a pragmatic solution for turning
+common EDN into usable Perl data structures.  In particular, keywords
+become strings, maps become Perl hashes, and vectors, lists, and sets
+all become Perl arrays.
+
+In the long run,
+[Transit](https://github.com/cognitect/transit-format) may be a better
+solution for] communication between Perl and systems which currently
+speak EDN.
+
+Usage
+-----
+
+           use edn;
+           use Data::Dumper;
+           print Dumper(edn::test('{:foo "bar" :baz {:quux [1 2 3 4 "blibble"]}}'))
+
+           $VAR1 = {
+            'baz' => {
+              'quux' => [
+                         1,
+                         2,
+                         3,
+                         4,
+                         'blibble'
+                        ]
+            },
+            'foo' => 'bar'
+          };
+
