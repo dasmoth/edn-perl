@@ -9,13 +9,14 @@ hood to do the parsing.
 
 This isn't intended as a definitive EDN library, capable of perfectly
 round-tripping any EDN.  Rather, it's a pragmatic solution for turning
-common EDN into usable Perl data structures.  In particular, keywords
-become strings, maps become Perl hashes, and vectors, lists, and sets
-all become Perl arrays.
+common EDN (notably responses from the Datomic REST adapter) into
+usable Perl data structures.  In particular, keywords become strings,
+maps become Perl hashes, and vectors, lists, and sets all become Perl
+arrays.
 
 In the long run,
 [Transit](https://github.com/cognitect/transit-format) may be a better
-solution for] communication between Perl and systems which currently
+solution for communication between Perl and systems which currently
 speak EDN.
 
 Usage
@@ -23,7 +24,7 @@ Usage
 
            use edn;
            use Data::Dumper;
-           print Dumper(edn::test('{:foo "bar" :baz {:quux [1 2 3 4 "blibble"]}}'))
+           print Dumper(edn::read('{:foo "bar" :baz {:quux [1 2 3 4 "blibble"]}}'))
 
            $VAR1 = {
             'baz' => {

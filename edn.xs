@@ -29,8 +29,7 @@ nodeToSV(const EdnNode& e) {
   } else if (e.type == edn::EdnNil) {
     return nullptr;
   } else if (e.type == edn::EdnSymbol) {
-    // return newSVpvn(e.value.c_str(), e.value.length());
-    return newSVpvn("sym", 3);
+    return newSVpvn(e.value.c_str(), e.value.length());
   } else if (e.type == edn::EdnKeyword) {
     return newSVpvn(e.value.c_str() + 1, e.value.length() - 1);
   } else if (e.type == edn::EdnString) {
