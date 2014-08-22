@@ -1,8 +1,8 @@
 perl-edn
 ========
 
-Simple [EDN](https://github.com/edn-format/edn) reader for Perl.  Will
-probably also write EDN soon...
+Simple [EDN](https://github.com/edn-format/edn) reader and writer for
+Perl.
 
 It uses [edn-cpp](https://github.com/shaunxcode/edn-cpp) under the
 hood to do the parsing.
@@ -39,3 +39,5 @@ Usage
             'foo' => 'bar'
           };
 
+          print(edn::write(foo => "bar", baz => 42, quux => [1, "foo", {a => 105}]})
+          {:baz 42 :quux [1 "foo" {:a 105}] :foo "bar"}

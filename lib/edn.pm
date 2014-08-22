@@ -4,6 +4,7 @@ use 5.014002;
 use strict;
 use warnings;
 use Carp;
+use Scalar::Util qw(looks_like_number);
 
 require Exporter;
 use AutoLoader;
@@ -15,6 +16,24 @@ our $VERSION = '0.01';
 require XSLoader;
 XSLoader::load('edn', $VERSION);
 
+sub write {
+    my $obj = shift;
+    my $type = ref $obj;
+    if ($type eq 'HASH') {
+        return '{' . join(' ', map {':' . $_ . ' ' . edn::write($obj->{$_})} keys($obj)) . '}';
+    } elsif ($type eq 'ARRAY') {
+        return '[' . join(' ', map {edn::write($_)} @$obj) . ']';
+    } elsif ($type eq '') {
+        if (looks_like_number($obj)) {
+            return $obj
+        } else {
+            return '"' . $obj . '"';
+        }
+    } else {
+        die "Don't understand $type"
+    }
+}
+
 1;
 __END__
 
@@ -22,12 +41,12 @@ __END__
 
 =head1 NAME
 
-edn - Perl extension for blah blah blah
+edn - Read and write EDN format
 
 =head1 SYNOPSIS
 
-  use edn
-  blah blah blah
+  use edn;
+  $data = edn::read('(:foo "bar" :baz [1 2 3])');
 
 =head1 DESCRIPTION
 
@@ -35,21 +54,9 @@ Stub documentation for edn.
 
 Blah blah blah.
 
-=head2 EXPORT
-
-None by default.
-
-
 =head1 SEE ALSO
 
-Mention other useful documentation such as the documentation of
-related modules or operating system documentation (such as man pages
-in UNIX), or any relevant external documentation such as RFCs or
-standards.
-
-If you have a mailing list set up for your module, mention it here.
-
-If you have a web site set up for your module, mention it here.
+https://github.com/edn-format/edn
 
 =head1 AUTHOR
 
