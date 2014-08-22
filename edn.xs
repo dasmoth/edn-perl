@@ -10,7 +10,6 @@ extern "C" {
   
 #undef do_open
 #undef do_close
-  
 
 #include <cstdio>
 #include <string>
@@ -21,9 +20,20 @@ using edn::NodeType;
 using edn::read;
 
 static SV*
+hashKeyToSV(const EdnNode& e) {
+  dTHX;
+
+  if (e.type == edn::EdnKeyword) {
+    return newSVpvn(e.value.c_str() + 1, e.value.length() - 1);
+  } else {
+    return newSVpvn(e.value.c_str(), e.value.length());
+  }
+}
+
+static SV*
 nodeToSV(const EdnNode& e) {
   dTHX;
-  
+
   if (e.type == edn::EdnInt) {
     return newSViv(std::stoi(e.value));
   } else if (e.type == edn::EdnNil) {
@@ -31,10 +41,11 @@ nodeToSV(const EdnNode& e) {
   } else if (e.type == edn::EdnSymbol) {
     return newSVpvn(e.value.c_str(), e.value.length());
   } else if (e.type == edn::EdnKeyword) {
-    return newSVpvn(e.value.c_str() + 1, e.value.length() - 1);
+    SV *kw = newSVpvn(e.value.c_str() + 1, e.value.length() - 1);
+    SV *ref = newRV_noinc((SV*) kw);
+    sv_bless(ref, gv_stashpv("EDN::Keyword", 0));
+    return ref;
   } else if (e.type == edn::EdnString) {
-    return newSVpvn(e.value.c_str(), e.value.length());
-  } else if (e.type == edn::EdnTagged) {
     return newSVpvn(e.value.c_str(), e.value.length());
   } else if (e.type == edn::EdnList || e.type == edn::EdnSet || e.type == edn::EdnVector) {
     AV *av = newAV();
@@ -46,11 +57,18 @@ nodeToSV(const EdnNode& e) {
   } else if (e.type == edn::EdnMap) {
     HV *hv = newHV();
     for (auto i = begin(e.values); i != end(e.values); ++i) {
-      SV *key = nodeToSV(*i);
+      SV *key = hashKeyToSV(*i);
       SV *value = nodeToSV(*(++i));
       hv_store_ent(hv, key, value, 0);
     }
     return newRV_noinc((SV*) hv);
+  } else if (e.type == edn::EdnTagged) {
+    HV *tagged = newHV();
+    hv_store_ent(tagged, newSVpvn("tag", 3) , nodeToSV(e.values.front()), 0);
+    hv_store_ent(tagged, newSVpvn("content", 7), nodeToSV(e.values.back()), 0);
+    SV *ref = newRV_noinc((SV*) tagged);
+    sv_bless(ref, gv_stashpv("EDN::Tagged", 0));
+    return ref;
   } else {
     throw "Don't understand node type";
   }
@@ -68,7 +86,7 @@ decode_edn(SV *str) {
     EdnNode e = read(mstr);
     sv = nodeToSV(e);
   } catch (const char *foo) {
-    std::cerr << foo << std::endl;
+    croak(foo);
   }
   
   return sv;

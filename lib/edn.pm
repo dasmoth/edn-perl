@@ -6,6 +6,9 @@ use warnings;
 use Carp;
 use Scalar::Util qw(looks_like_number);
 
+use EDN::Keyword;
+use EDN::Tagged;
+
 require Exporter;
 use AutoLoader;
 
@@ -29,6 +32,10 @@ sub write {
         } else {
             return '"' . $obj . '"';
         }
+    } elsif ($type eq 'EDN::Keyword') {
+        return ':' . $$obj;
+    } elsif ($type eq 'EDN::Tagged') {
+        return '#' . $obj->{'tag'} . edn::write($obj->{'content'});
     } else {
         die "Don't understand $type"
     }
