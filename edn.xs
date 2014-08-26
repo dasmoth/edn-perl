@@ -61,13 +61,13 @@ nodeToSV(const EdnNode& e) {
   } else if (e.type == edn::EdnList || e.type == edn::EdnSet || e.type == edn::EdnVector) {
     AV *av = newAV();
     int idx = 0;
-    for (auto i = begin(e.values); i != end(e.values); ++i) {
+    for (std::list<edn::EdnNode>::const_iterator i = e.values.begin(); i != e.values.end(); ++i) {
       av_store(av, idx++, nodeToSV(*i));
     }
     return newRV_noinc((SV*) av);
   } else if (e.type == edn::EdnMap) {
     HV *hv = newHV();
-    for (auto i = begin(e.values); i != end(e.values); ++i) {
+    for (std::list<EdnNode>::const_iterator i = e.values.begin(); i != e.values.end(); ++i) {
       SV *key = hashKeyToSV(*i);
       SV *value = nodeToSV(*(++i));
       hv_store_ent(hv, key, value, 0);
