@@ -8,6 +8,7 @@ use Scalar::Util qw(looks_like_number);
 
 use EDN::Keyword;
 use EDN::Tagged;
+use EDN::Boolean;
 
 require Exporter;
 use AutoLoader;
@@ -36,6 +37,8 @@ sub write {
         return ':' . $$obj;
     } elsif ($type eq 'EDN::Tagged') {
         return '#' . $obj->{'tag'} . edn::write($obj->{'content'});
+    } elsif ($type eq 'EDN::Boolean') {
+        return '' . $obj;
     } else {
         die "Don't understand $type"
     }

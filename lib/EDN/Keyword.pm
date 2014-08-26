@@ -11,6 +11,6 @@ use overload fallback => 1,
     '""' => sub {
                   my $self = shift;
                   return ':' . $$self;
-                };
+                } ;
 
 1;

@@ -4,6 +4,7 @@ extern "C" {
 
 #include "EXTERN.h"
 #include "perl.h"
+#include "embed.h"
 #include "XSUB.h"
 
 }
@@ -34,10 +35,14 @@ static SV*
 nodeToSV(const EdnNode& e) {
   dTHX;
 
-  if (e.type == edn::EdnInt) {
-    return newSViv(std::stoi(e.value));
+  if (e.type == edn::EdnInt || e.type == edn::EdnFloat) {
+    // originally converted to an IV first, but this fails for large ints.
+    // Should maybe go back to special-casing small ints at some point.
+    return newSVpvn(e.value.c_str(), e.value.length());
   } else if (e.type == edn::EdnNil) {
-    return nullptr;
+    // Undef seems the closes Perl concept to nil, but doesn't work
+    // as values in maps, so may need rethinking.
+    return &PL_sv_undef;
   } else if (e.type == edn::EdnSymbol) {
     return newSVpvn(e.value.c_str(), e.value.length());
   } else if (e.type == edn::EdnKeyword) {
@@ -45,6 +50,12 @@ nodeToSV(const EdnNode& e) {
     SV *ref = newRV_noinc((SV*) kw);
     sv_bless(ref, gv_stashpv("EDN::Keyword", 0));
     return ref;
+  } else if (e.type == edn::EdnBool) {
+    if (e.value == "true") {
+      return get_sv("EDN::Boolean::true", 0);
+    } else {
+      return get_sv("EDN::Boolean::false", 0);
+    }
   } else if (e.type == edn::EdnString) {
     return newSVpvn(e.value.c_str(), e.value.length());
   } else if (e.type == edn::EdnList || e.type == edn::EdnSet || e.type == edn::EdnVector) {
