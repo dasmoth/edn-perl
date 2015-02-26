@@ -9,19 +9,22 @@ use Scalar::Util qw(looks_like_number);
 use EDN::Keyword;
 use EDN::Tagged;
 use EDN::Boolean;
+use EDN::Literal;
 
 require Exporter;
 use AutoLoader;
 
 our @ISA = qw(Exporter);
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 require XSLoader;
 XSLoader::load('edn', $VERSION);
 
 sub write {
     my $obj = shift;
+    return "nil" unless defined($obj);
+
     my $type = ref $obj;
     if ($type eq 'HASH') {
         return '{' . join(' ', map {':' . $_ . ' ' . edn::write($obj->{$_})} keys($obj)) . '}';
@@ -39,6 +42,8 @@ sub write {
         return '#' . $obj->{'tag'} . edn::write($obj->{'content'});
     } elsif ($type eq 'EDN::Boolean') {
         return '' . $obj;
+    } elsif ($type eq 'EDN::Literal') {
+        return $$obj;
     } else {
         die "Don't understand $type"
     }

@@ -20,6 +20,12 @@ using edn::EdnNode;
 using edn::NodeType;
 using edn::read;
 
+#ifdef __cplusplus 
+#define dNOOP (void)0 
+#else 
+#define dNOOP extern int Perl___notused(void) 
+#endif 
+
 static SV*
 hashKeyToSV(const EdnNode& e) {
   dTHX;
